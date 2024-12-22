@@ -1,3 +1,4 @@
 *.so filter=lfs diff=lfs merge=lfs -text
 venv/lib/python3.12/site-packages/cv2/cv2.abi3.so filter=lfs diff=lfs merge=lfs -text
 venv/lib/python3.12/site-packages/jaxlib/mlir/_mlir_libs/libjaxlib_mlir_capi.so filter=lfs diff=lfs merge=lfs -text
+venv/lib/python3.12/site-packages/jaxlib/xla_extension.so filter=lfs diff=lfs merge=lfs -text
