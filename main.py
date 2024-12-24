@@ -2,14 +2,12 @@ import cv2
 import mediapipe as mp
 import math
 
-
 # Инициализация объектов MediaPipe для обработки рук
 def initHandelObject():
     mp_hands = mp.solutions.hands
     hands = mp_hands.Hands(min_detection_confidence=0.7, min_tracking_confidence=0.7)
     mp_drawing = mp.solutions.drawing_utils
     return hands, mp_drawing, mp_hands
-
 
 # Нахождение координат кончиков указательных пальцев
 def setFingerCoord(landmarks, frame):
@@ -23,12 +21,10 @@ def setFingerCoord(landmarks, frame):
 
     return normalX1, normalY1, normalX2, normalY2
 
-
 # Рисование линии между кончиками пальцев правой и левой руки
 def drawLine(frame, normalX1, normalY1, normalX2, normalY2):
     frame = cv2.line(frame, (normalX1, normalY1), (normalX2, normalY2), (0, 0, 255), 2)
     return frame
-
 
 # Определение левой или правой руки
 def setRightOrLeftHand(landmarks):
@@ -38,7 +34,6 @@ def setRightOrLeftHand(landmarks):
         return 'left'  # Левая рука
     else:
         return 'right'  # Правая рука
-
 
 # Функция создания мяча
 def createBall(frame_width, frame_height):
@@ -50,7 +45,7 @@ def createBall(frame_width, frame_height):
     bounce_strength = 1.5  # Коэффициент отскока
     return ball_pos_x, ball_pos_y, ball_radius, speed_x, speed_y, gravity_y, bounce_strength
 
-
+# Функция для проверки столкновения мяча с наклонной линией
 def checkBallLineCollision(ball_pos_x, ball_pos_y, ball_radius, normalX1, normalY1, normalX2, normalY2):
     line_slope = (normalY2 - normalY1) / (normalX2 - normalX1) if normalX2 != normalX1 else float('inf')
 
@@ -64,8 +59,6 @@ def checkBallLineCollision(ball_pos_x, ball_pos_y, ball_radius, normalX1, normal
 
     return False, 0
 
-
-
 # Функция для расчета отскока мяча от наклонной линии
 def calculateBounce(speed_y, line_slope, bounce_strength):
     if line_slope != float('inf'):
@@ -75,7 +68,6 @@ def calculateBounce(speed_y, line_slope, bounce_strength):
         return -bounce_speed
     else:
         return -speed_y * bounce_strength
-
 
 # Обработка отскока мяча от стен и верха экрана
 def handleWallCollisions(ball_pos_x, ball_pos_y, ball_radius, speed_x, speed_y, frame_width, frame_height,
@@ -98,7 +90,6 @@ def handleWallCollisions(ball_pos_x, ball_pos_y, ball_radius, speed_x, speed_y, 
         speed_x = -speed_x * bounce_strength
 
     return speed_x, speed_y, ball_pos_y
-
 
 # Основной метод открытия и обработки обнаружения рук через камеру
 def mainWhileCam(hands, mp_drawing, mp_hands):
@@ -159,6 +150,8 @@ def mainWhileCam(hands, mp_drawing, mp_hands):
             collision, line_slope = checkBallLineCollision(ball_pos_x, ball_pos_y, ball_radius, left_x1, left_y1,
                                                            right_x1, right_y1)
             if collision:
+                # Корректируем позицию мяча, чтобы он не зависал
+                ball_pos_y = (line_slope * (ball_pos_x - left_x1) + left_y1) - ball_radius  # Поднятие мяча на линию
                 speed_y = calculateBounce(speed_y, line_slope, bounce_strength)
 
         # Обновляем позицию мяча
@@ -182,10 +175,10 @@ def mainWhileCam(hands, mp_drawing, mp_hands):
     cam.release()
     cv2.destroyAllWindows()
 
-
 # Инициализация объектов MediaPipe и запуск камеры
 hands, mp_drawing, mp_hands = initHandelObject()
 mainWhileCam(hands, mp_drawing, mp_hands)
+
 
 if __name__ == "__main__":
     # Инициализируем объекты для обработки рук
